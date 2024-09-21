@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -33,7 +35,7 @@ import java.io.Writer;
 public class SecurityConfiguration {
 
     @Resource
-    AuthorizeService authorizeService; // 注册为Bean进行使用
+    AuthorizeService authorizeService; // 自定义的UsersDetails
 
     @Resource
     DataSource dataSource;
@@ -43,6 +45,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(conf -> {
+                    conf.requestMatchers("/api/auth/**").permitAll(); // 放行所有有关对与验证的接口
                     conf.anyRequest().authenticated(); // 最初的一个设置，访问页面需要认证
                 })
                 .csrf(AbstractHttpConfigurer::disable)
@@ -91,11 +94,10 @@ public class SecurityConfiguration {
     private void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse response, AccessDeniedException e) throws IOException {
         response.setContentType("application/json; charset=utf-8");
         Writer writer = response.getWriter();
-        writer.write(JSONObject.toJSONString((RestBean.failure(e.getMessage(), 401, e.getMessage()))));
     }
 
     /**
-     * 将passwordenCoder注册为Bean直接交给Security进行配置k
+     * 将passwordEnCoder注册为Bean直接交给Security进行配置
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -117,11 +119,6 @@ public class SecurityConfiguration {
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         response.setContentType("application/json; charset=utf-8");
         Writer writer = response.getWriter();
-        writer.write(JSONObject.toJSONString((RestBean.failure(exception.getMessage(), 401, exception.getMessage()))));
+        writer.write(RestBean.failure(exception.getMessage(),400).toJsonString());
     }
-
-
-
-
-
 }

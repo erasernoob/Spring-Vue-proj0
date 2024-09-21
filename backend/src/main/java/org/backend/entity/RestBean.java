@@ -29,7 +29,7 @@ public class  RestBean<T>{
         return new RestBean<T>(message, null, code, true);
     }
 
-    public static <T> RestBean<T> failure(String message, int code, String exceptionMessage){
+    public static <T> RestBean<T> failure(String message, int code){
         return new RestBean<T>(message, null, code, false);
     }
 

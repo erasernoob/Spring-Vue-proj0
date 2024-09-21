@@ -79,6 +79,15 @@ const rules =  {
 
 const formRef = ref()
 
+const validateSendEmail = () => {
+  post("api/auth/valid-email", {
+    email: form.email
+  }, (message) => {
+    ElMessage.success("验证码发送成功")
+  })
+
+}
+
 
 /**
  * 注册之前通过函数进行判断
@@ -89,15 +98,6 @@ const register = () => {
       ElMessage.warning("信息填写错误,请完整正确填写注册信息")
     }
   })
-    // post('api/auth/register', {
-    //   username: form.username,
-    //   password: form.password,
-    //   email:  form.email,
-    //   emailCode: form.email_code
-    // }, (message) => {
-    //   ElMessage.success(message)
-    //   router.push('/index')
-    // })
 }
 </script>
 
@@ -144,7 +144,7 @@ const register = () => {
               </el-input>
             </el-col>
             <el-col :span="7">
-              <el-button size="default" @click="" type="success" style="text-align: right; translate: 0 3px" :disabled="!isEmailValid" >点击发送验证码</el-button>
+              <el-button size="default" @click="validateSendEmail" type="success" style="text-align: right; translate: 0 3px" :disabled="!isEmailValid" >点击发送验证码</el-button>
             </el-col>
           </el-row>
         </el-form-item>
