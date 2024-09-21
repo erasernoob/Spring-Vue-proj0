@@ -1,4 +1,14 @@
 <script setup>
+import router from "@/router/index.js";
+import {ElMessage} from "element-plus";
+import {get} from "@/net"
+
+const logout = () => {
+  get('/api/auth/logout', (message) => {
+    ElMessage.success(message);
+    router.push('/');
+  })
+};
 
 </script>
 
@@ -7,7 +17,7 @@
     欢迎来到学习平台
   </div>
   <div>
-    <el-button type="danger" plain>退出登录</el-button>
+    <el-button @click="logout()" type="danger" plain>退出登录</el-button>
   </div>
 
 </template>
