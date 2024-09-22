@@ -1,14 +1,10 @@
 package org.backend.service.Impl;
 
-import ch.qos.logback.core.pattern.color.BoldCyanCompositeConverter;
 import jakarta.annotation.Resource;
 import org.backend.entity.Account;
-import org.backend.entity.RestBean;
 import org.backend.mapper.UserMapper;
 import org.backend.service.AuthorizeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.MailSender;
@@ -17,7 +13,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -83,7 +78,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
     @Override
     public String updatePassword(String username, String email, String code, String newPassword, String sessionId) {
-        String key = "email:" + sessionId + ":" + email + "true";请求
+        String key = "email:" + sessionId + ":" + email + "true";
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
             // 在这里进行是否验证的
             String s = stringRedisTemplate.opsForValue().get(key);

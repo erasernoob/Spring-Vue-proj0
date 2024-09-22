@@ -26,7 +26,7 @@ function get(url, success, failure = defaultFailure,  error = defaultError) {
         withCredentials: true
     }).then(({data}) => {
         if(data.success) {
-            success(data.message, data.status)
+            success(data.data, data.message, data.status)
         }
         else failure(data.message, data.status)
     }).catch(error)
