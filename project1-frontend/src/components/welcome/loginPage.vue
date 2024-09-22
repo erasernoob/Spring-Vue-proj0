@@ -43,7 +43,7 @@ import router from "@/router/index.js";
       </el-input>
     </div>
     <div style="margin-top: 20px;">
-      <el-input v-model="form.password" style="width: 430px; height: 40px" type="text" placeholder="请输入密码">
+      <el-input v-model="form.password" style="width: 430px; height: 40px" type="password" placeholder="请输入密码">
         <template #prefix>
           <el-icon ><lock/></el-icon>
         </template>

@@ -16,7 +16,7 @@ import {Lock, User} from "@element-plus/icons-vue";
 
       <div style="width: 700px; background-color: white; z-index: 1">
           <el-image style="width: fit-content; height: min-content" fit="cover" src="https://1000logos.net/wp-content/uploads/2020/03/McLaren-Logo.png"/>
-        <transition name="el-fade-in">
+        <transition name="el-fade-in-linear">
           <router-view/>
         </transition>
       </div>

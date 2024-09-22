@@ -98,6 +98,8 @@ public class SecurityConfiguration {
 
     /**
      * 将passwordEnCoder注册为Bean直接交给Security进行配置
+     * 在配置中将passwordcoder设置为Bean会出现循环引用，configuration 需要AuthorizeService而后者又需要他进行创建Bean
+     * 解决方案：在service层加入懒加载配置
      */
     @Bean
     public PasswordEncoder passwordEncoder() {

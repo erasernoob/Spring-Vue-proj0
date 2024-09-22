@@ -1,10 +1,13 @@
 package org.backend.service.Impl;
 
+import ch.qos.logback.core.pattern.color.BoldCyanCompositeConverter;
 import jakarta.annotation.Resource;
 import org.backend.entity.Account;
+import org.backend.entity.RestBean;
 import org.backend.mapper.UserMapper;
 import org.backend.service.AuthorizeService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.MailSender;
@@ -12,6 +15,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -33,6 +37,13 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
     @Resource
     StringRedisTemplate stringRedisTemplate;
+
+//    BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+    @Resource
+    @Lazy // 引入懒加载，防止循环引用
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+
 
     // 重写验证服务方法
     @Override
@@ -58,13 +69,17 @@ public class AuthorizeServiceImpl implements AuthorizeService {
      */
 
     @Override
-    public boolean sendValidateEmail(String email, String sessionId) {
+    public String sendValidateEmail(String email, String sessionId) {
         String key = "email:" + sessionId + ":" + email;
 
         // 实现每间隔一段时间（一分钟）才能进行下一次请求的（当剩余时间剩余2分钟以下，就可以重新发, 重复）
         if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
             Long expire = Optional.ofNullable(stringRedisTemplate.getExpire(key, TimeUnit.SECONDS)).orElse(0L);
-            if(expire > 120)  return false;
+            if(expire > 120)  return  "请求过于频繁，请稍候再试";
+        }
+        if(mapper.findAccountByNameOrEmail(email) != null) {
+            // 根据邮箱给找到了存在的用户
+            return "此邮箱已被注册";
         }
         Random random = new Random();
         // 随机生成并创建验证码
@@ -81,10 +96,29 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         try {
             mailSender.send(message);
             stringRedisTemplate.opsForValue().set(key, code, 3, TimeUnit.MINUTES); // redis中设置有效期为三分钟
-            return true;
+            return null;
         } catch (MailSendException e) {
             e.printStackTrace();
-            return false;
+            return "验证码发送失败，请联系管理员";
+        }
+    }
+
+    @Override
+    public String validateEmailAndRegister(String username, String password, String email, String code, String sessionId) {
+        String key = "email:" + sessionId + ":" + email;
+        if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
+            String s = stringRedisTemplate.opsForValue().get(key);
+            if(s == null) return "请先获取验证码";
+            if(s.equals(code)) {
+                int res = mapper.createAccount(username, bCryptPasswordEncoder.encode(password), email);
+                if(res > 0) return null;
+                return "内部服务器错误请联系管理员";
+            } else {
+                return "验证码错误，请检查后在提交";
+            }
+
+        } else {
+            return "请先获取验证码";
         }
     }
 }

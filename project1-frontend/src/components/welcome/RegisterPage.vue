@@ -15,6 +15,8 @@ const form = reactive({
 })
 
 const isEmailValid = ref(false)
+const cold = ref(0)
+  // 默认情况为没有发送邮件
 
 const validateName = (rules, value, callback) => {
   if(value === '') {
@@ -83,9 +85,10 @@ const validateSendEmail = () => {
   post("api/auth/valid-email", {
     email: form.email
   }, (message) => {
-    ElMessage.success("验证码发送成功")
+    ElMessage.success(message)
+    cold.value = 60
+    setInterval(() => cold.value--, 1000) // 设置每秒钟减一
   })
-
 }
 
 
@@ -96,6 +99,17 @@ const register = () => {
   formRef.value.validate((isValid) => {
     if(!isValid) {
       ElMessage.warning("信息填写错误,请完整正确填写注册信息")
+    } else {
+      post('api/auth/register', {
+        username: form.username,
+        password: form.password,
+        email: form.email,
+        email_code: form.email_code
+      }, (message) =>  {
+        ElMessage.success("注册成功")
+        router.push('/')
+
+      })
     }
   })
 }
@@ -144,7 +158,7 @@ const register = () => {
               </el-input>
             </el-col>
             <el-col :span="7">
-              <el-button size="default" @click="validateSendEmail" type="success" style="text-align: right; translate: 0 3px" :disabled="!isEmailValid" >点击发送验证码</el-button>
+              <el-button size="default" @click="validateSendEmail" type="success" style="text-align: right; translate: 0 3px" :disabled="!isEmailValid || cold > 0" >{{cold > 0 ? '  请稍候' + cold + '秒  ' : '点击获取验证码' }}</el-button>
             </el-col>
           </el-row>
         </el-form-item>
