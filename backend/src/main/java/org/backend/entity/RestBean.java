@@ -14,8 +14,8 @@ public record RestBean<T>(String message, int code, T data) {
         return new RestBean<>("请求失败", 400, null);
     }
 
-    public static <T> RestBean<T> failure(String messgae, int code, T data) {
-        return new RestBean<>(messgae, code, data);
+    public static <T> RestBean<T> failure(String message , int code, T data) {
+        return new RestBean<>(message, code, data);
     }
 
     public String toJson() {

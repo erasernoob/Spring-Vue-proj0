@@ -4,3 +4,6 @@ spring:
       url: jdbc:mysql://localhost:3306/study?userUnicode=true&characterEncoding=utf-8
       username: root
       driver-class-name: com.mysql.cj.jdbc.Driver
+    security:
+      jwt:
+        key: absdjfhlafjas
