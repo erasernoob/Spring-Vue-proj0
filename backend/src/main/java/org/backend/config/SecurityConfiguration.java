@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.backend.entity.RestBean;
 import org.backend.filter.JwtAuthorizerFilter;
-import org.backend.service.MyUserService;
 import org.backend.utils.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,26 +16,22 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.Writer;
 
 @Configuration
 public class SecurityConfiguration {
 
+    @Resource
+    public JwtAuthorizerFilter jwtAuthorizerFilter;
 
     @Resource
-    JwtUtils utils;
-
-    @Resource
-    JwtAuthorizerFilter jwtAuthorizerFilter;
+    public JwtUtils utils;
 
 
     @Bean
@@ -55,13 +50,26 @@ public class SecurityConfiguration {
                 .sessionManagement(conf -> {
                     conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-                .addFilterBefore(new JwtAuthorizerFilter(), UsernamePasswordAuthenticationFilter.class) // 添加自定义的filter到配置中
+                .addFilterBefore(jwtAuthorizerFilter, UsernamePasswordAuthenticationFilter.class) // 添加自定义的filter到配置中
                 .exceptionHandling(conf -> {
+                    conf.authenticationEntryPoint(new AuthenticationEntryPoint() {
+                        // 处理没有登录验证的情况
+                        @Override
+                        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+                            response.setContentType("application/json; charset=utf-8");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            Writer writer = response.getWriter();
+                            writer.write(RestBean.failure("未登录,拒绝访问", 0, null).toJson());
+                        }
+                    });
+                    // 处理已经登录，但是权限所导致的无法进入的情况
                     conf.accessDeniedHandler(new AccessDeniedHandler() {
                         @Override
                         public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
                             response.setContentType("application/json; charset=utf-8");
-                            response.getWriter().write("无法访问");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            // FORBIDDEN
+                            response.getWriter().write(RestBean.failure(accessDeniedException.getMessage(), 403, null).toJson());
                         }
                     });
                 })
@@ -74,8 +82,16 @@ public class SecurityConfiguration {
 
     public void onAuthenticationLogout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         response.setContentType("application/json;charset=UTF-8");
+        // 拉黑token
+        boolean result = utils.inValidateJwt(request.getHeader("Authorization")); // 获取到验证信息
         Writer writer = response.getWriter();
-        writer.write(RestBean.success("退出成功", 200,  null).toJson());
+        if(result) {
+            writer.write(RestBean.success("退出成功", 200,  null).toJson());
+        } else {
+            writer.write(RestBean.success("退出失败", 400,  null).toJson());
+
+        }
+
     }
 
     public void onAuthentication(HttpServletRequest request, HttpServletResponse response, Object object) throws IOException, ServletException {
@@ -89,9 +105,4 @@ public class SecurityConfiguration {
             writer.write(RestBean.success("登录成功", 200 , token).toJson());
         }
     }
-
-//    @Bean
-//    DataSource configureDataSource() {
-//    }
-
 }

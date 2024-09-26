@@ -20,19 +20,19 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthorizerFilter extends OncePerRequestFilter {
-//   @Resource
-   JwtUtils jwtUtils = new JwtUtils();
+   @Resource
+   public JwtUtils utils;
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
+    public void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization"); // 得到请求头
-        DecodedJWT decodedJWT = jwtUtils.resolveJwt(authHeader);
+        DecodedJWT decodedJWT = utils.resolveJwt(authHeader);
         // 如果获取到了正确的token就开始解析用户的详细信息，最后继续做过滤的事情
         if(decodedJWT != null) {
-            UserDetails user = jwtUtils.toUserDetails(decodedJWT);
+            UserDetails user = utils.toUserDetails(decodedJWT);
             // Security用来封装用户信息和权限的一个token类，构造函数分别要提供的是， 用户信息，凭证，用户的身份信息和权限
             // 之后继续的向其中添加更多的验证信息， 最后直接将该用户的验证信息直接丢入security上下文之后，就是相当于得到身份验证了
             UsernamePasswordAuthenticationToken authenticationToken
@@ -40,9 +40,8 @@ public class JwtAuthorizerFilter extends OncePerRequestFilter {
 
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // 继续添加请求的认真信息
             SecurityContextHolder.getContext().setAuthentication(authenticationToken); // 最后将认证信息直接丢进security的上下文中
-
-            // 出于方便，可以
-
+            // 出于方便，可以在之后获取用户的ID
+            request.setAttribute("id", utils.toId(decodedJWT));
         }
         filterChain.doFilter(request, response); // 继续下一个过滤
     }

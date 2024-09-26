@@ -1,9 +1,13 @@
 spring:
-    datasource:
+  datasource:
       password: 123
       url: jdbc:mysql://localhost:3306/study?userUnicode=true&characterEncoding=utf-8
       username: root
       driver-class-name: com.mysql.cj.jdbc.Driver
-    security:
+  security:
       jwt:
         key: absdjfhlafjas
+  data:
+    redis:
+      port: 6379
+      host: localhost
