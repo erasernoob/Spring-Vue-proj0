@@ -100,7 +100,5 @@ function internalGet(url, data, success, header, failure = defaultFailure, error
 export {login}
 
 
-
-
-
-
+export class post {
+}

@@ -1,5 +1,4 @@
 <script setup>
-import {get, post} from '@/net'
 import {ElMessage} from "element-plus";
 import { reactive, ref } from 'vue'
 // import { ComponentSize, FormInstance, FormRules } from 'element-plus'
