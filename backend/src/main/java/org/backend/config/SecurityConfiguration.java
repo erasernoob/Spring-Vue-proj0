@@ -5,7 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.backend.entity.RestBean;
+import org.backend.entity.dto.AccountDto;
+import org.backend.entity.vo.response.AuthorizeVO;
 import org.backend.filter.JwtAuthorizerFilter;
+import org.backend.service.AccountService;
 import org.backend.utils.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +35,9 @@ public class SecurityConfiguration {
 
     @Resource
     public JwtUtils utils;
+
+    @Resource
+    AccountService accountService;
 
 
     @Bean
@@ -101,8 +107,13 @@ public class SecurityConfiguration {
             writer.write(RestBean.failure("登录失败", 400 , ((Exception) object).getMessage()).toJson());
         } else if( object instanceof Authentication) {
             User user = (User)  ((Authentication) object).getPrincipal(); // 直接从认证类中将User的详细信息读取出来，便于JWt创建发放令牌使用
-            String token = utils.createJwt(user, "baiyiheng", 1);
-            writer.write(RestBean.success("登录成功", 200 , token).toJson());
+            AccountDto accountDto = accountService.findAccountByNameOrEmail(user.getUsername());
+            String token = utils.createJwt(user, accountDto.getUsername(), accountDto.getId());
+            AuthorizeVO authorizeVO = accountDto.asViewObject(AuthorizeVO.class, v -> {
+                v.setToken(token);
+                v.setExpire(utils.expiration.toString());
+            });
+            writer.write(RestBean.success("登录成功", 200 , authorizeVO).toJson());
         }
     }
 }

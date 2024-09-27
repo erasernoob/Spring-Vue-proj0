@@ -3,6 +3,7 @@ import {post} from '@/net'
 import {get} from '@/net'
 import {ElMessage} from "element-plus";
 import {reactive} from "vue";
+// import {login} from "@/net";
 
 const form = reactive({
   username: '',
@@ -10,15 +11,23 @@ const form = reactive({
   remember: false
 });
 
+const rule = {
+  username: [
+    {required: true, message: '请输入用户名'}
+  ],
+  password: [
+    {required: true, message: '请输入密码'}
+  ]
+}
 
 const login = () => {
   if(!form.username || !form.password) {
     ElMessage.warning('请填写用户名和密码~')
   } else {
     post('/api/auth/login', {
-          username: form.username,
-          password: form.password,
-          remember: form.remember
+      username: form.username,
+      password: form.password,
+      remember: form.remember
     }, (message) => {
       ElMessage.success(message);
       router.push('index');
