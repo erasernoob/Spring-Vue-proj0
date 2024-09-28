@@ -48,6 +48,7 @@ public class SecurityConfiguration {
                     conf.anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .formLogin(conf -> {
                     conf.loginProcessingUrl("/api/auth/login");
                     conf.successHandler(this::onAuthentication);

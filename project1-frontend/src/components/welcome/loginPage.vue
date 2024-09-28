@@ -42,7 +42,7 @@ function userLogin() {
         </el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" style="width: 430px; height: 40px" type="text" placeholder="请输入密码">
+          <el-input v-model="form.password" style="width: 430px; height: 40px" type="password" placeholder="请输入密码">
             <template #prefix>
               <el-icon ><lock/></el-icon>
             </template>
@@ -63,7 +63,7 @@ function userLogin() {
     </div>
     <div style="margin-top: 20px;">
       <div style="margin-top: 10px">
-        <el-button @click="userLogin" size="default" type="success" style="width: 150px; " plain>立即登录</el-button>
+        <el-button @click="userLogin()" size="default" type="success" style="width: 150px; " plain>立即登录</el-button>
       </div>
       <div>
         <el-divider>
