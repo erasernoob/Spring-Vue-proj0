@@ -23,7 +23,9 @@ const rule = {
 const formRef = ref();
 
 function userLogin() {
-  login(form.username, form.password, form.remember, () => {})
+  login(form.username, form.password, form.remember, () => {
+    router.push('/index')
+  })
 }
 </script>
 

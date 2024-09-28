@@ -1,6 +1,7 @@
 import axios from "axios";
 import {isNavigationFailure} from "vue-router";
 import {ElMessage} from "element-plus";
+import router from "@/router/index.js";
 
 const defaultError = (err) => {
     console.error(err)
@@ -9,10 +10,31 @@ const defaultError = (err) => {
 
 const tokenItemName = 'access_token'
 
+/**
+ *拿到token并且将其封装在请求头中
+ * @returns {{Authorization: string}|{}}
+ */
+function accessHeader() {
+    const token = getAccessToken()
+    return token !== null ? {'Authorization': `Bearer ${token.token}`} : {}
+}
+
+/**
+ * 封装好的get请求方法，export每次get请求都携带着访问请求头部访问token
+ * @param url
+ * @param success
+ * @param failure
+ */
+function get(url, success, failure = defaultFailure()) {
+    internalGet(url, success, accessHeader(), failure)
+}
+
+function post(url, data, success, failure= defaultFailure()) {
+    internalPost(url, data, success, accessHeader(), failure)
+}
 
 const defaultFailure = (message, code, url) => {
     console.warn(`请求地址: ${url}, 状态码: ${code}, 错误信息： ${message}`)
-    ElMessage.warning(message)
 }
 
 function getAccessToken() {
@@ -54,8 +76,17 @@ function login(username, password, remember, success, failure = defaultFailure) 
     }, {
         'Content-Type': 'application/x-www-form-urlencoded'
     }, failure)
-
 }
+
+function logout(success) {
+    console.log("请求一次")
+    post('api/auth/logout', null, () => {
+        ElMessage.success("退出登录成功")
+        deleteToken()
+        success()
+    })
+}
+
 
 // 存储token逻辑
 function storeAccessToken(token, remember, expire) {
@@ -97,8 +128,6 @@ function internalGet(url, data, success, header, failure = defaultFailure, error
     })
 }
 
-export {login}
+function isUnauthorized() {return !getAccessToken()}
 
-
-export class post {
-}
+export {login, get, post, logout,isUnauthorized}
