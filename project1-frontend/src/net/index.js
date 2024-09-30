@@ -26,7 +26,7 @@ function accessHeader() {
  * @param failure
  */
 function get(url, success, failure = defaultFailure()) {
-    internalGet(url, success, accessHeader(), failure)
+    internalGet(url, null, success, accessHeader(), failure)
 }
 
 function post(url, data, success, failure= defaultFailure()) {

@@ -10,9 +10,9 @@ import org.backend.service.AccountService;
 import org.backend.utils.Const;
 import org.backend.utils.FlowUtils;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -38,6 +38,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDto> i
 
     @Resource
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -86,9 +88,10 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDto> i
             }
             String code = generateVerifyCode();
             Map<String, Object> data = Map.of("type", type, "email", email, "code", code);
-            amqpTemplate.convertAndSend("mail", data); // 加入消息队列
+            amqpTemplate.convertAndSend("email", data); // 加入消息队列
             stringRedisTemplate.opsForValue()
                     .set(Const.VERIFY_EMAIL_DATA + email, code, 3, TimeUnit.MINUTES); // 三分钟有效
+            code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + email);
             return null;
         }
     }
@@ -106,11 +109,11 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDto> i
 
     @Override
     public String registerEmailAccount(EmailRegisterVO vo) {
-        String email = vo.getMail();
+        String email = vo.getEmail();
         // 校验是否code是否正确
         String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + email);
         if(code == null) return "请先获取验证码";
-        if(!code.equals(vo.getCode())) {return "验证码错误，请重新输入";}
+        if(!code.equals(vo.getEmail_code())) {return "验证码错误，请重新输入";}
         // 判断邮件是否被注册过
         if(existAccountEmail(email)) {return "该邮件已被注册";}
         if(existAccountUsername(vo.getUsername())) {return "用户名已经被他人注册";}

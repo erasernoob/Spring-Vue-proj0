@@ -5,6 +5,7 @@ import {login} from "@/net/index.js";
 import {Lock, User} from "@element-plus/icons-vue";
 import {ref} from "vue";
 
+
 const form = reactive({
   username: '',
   password: '',
@@ -56,7 +57,7 @@ function userLogin() {
               <el-checkbox v-model="form.remember" label="记住我" size="large"/>
             </el-col>
             <el-col :span="100" style="text-align: -webkit-right">
-              <el-link>忘记密码？</el-link>
+              <el-link @click="router.push('/reset')">忘记密码？</el-link>
             </el-col>
           </el-row>
         </el-form-item>

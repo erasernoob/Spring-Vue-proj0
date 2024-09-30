@@ -16,7 +16,7 @@ import java.util.Map;
  */
 
 @Component
-@RabbitListener(queues = "mail")
+@RabbitListener(queues = "email")
 public class MailQueueListener {
 
     @Resource

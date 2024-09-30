@@ -1,10 +1,9 @@
 <script setup>
+import {reactive, ref, computed} from "vue";
 import {ElMessage} from "element-plus";
-import { reactive, ref } from 'vue'
 import {post, get} from "@/net/index.js";
 
 
-import {computed}  from "vue";
 
 // import { ComponentSize, FormInstance, FormRules } from 'element-plus'
 
@@ -107,7 +106,7 @@ function askCode() {
         (message) => {
           ElMessage.warning(message)
           coldTime.value = 0
-    })
+        })
   }
 }
 
@@ -130,70 +129,76 @@ const register = () => {
   })
 }
 
+const reset = () => {
+
+
+}
+
+const active = ref(0)
 
 </script>
 
 <template>
-<!--  <el-image style="width: fit-content; height: min-content" fit="cover" src="https://1000logos.net/wp-content/uploads/2020/03/McLaren-Logo.png"/>-->
-  <div style="text-align: center; margin: 0 120px">
-    <div style="text-align: center;">
-      <div style="font-size: 40px; font-weight: bold">注册新用户</div>
-      <div style="font-size: 20px; margin-top: 10px; color: gray">
-        请在下方输入详细信息注册进入平台
+  <div style="text-align: center;">
+   <el-steps align-center finish-status="success" :active="active">
+     <el-step title="验证电子邮件"></el-step>
+     <el-step title="重新设置密码"></el-step>
+   </el-steps>
+  </div>
+  <div v-if="active === 0" style="text-align: center">
+    <div style="font-size: 25px; font-weight: bold">重置密码</div>
+    <div style="margin-top: 10px; color: gray">请输入需要重置密码的电子邮件地址</div>
+    <div style="margin-top: 25px; margin-left: 140px">
+        <el-form :model="form">
+          <el-form-item prop="email">
+            <el-input v-model="form.email" style="height: 40px; width: 430px" type="email" placeholder="电子邮箱地址">
+              <template #prefix> <el-icon><<Message /></el-icon></template>
+            </el-input>
+          </el-form-item>
+          <el-form-item prop="email_code">
+            <el-row gutter="10" style="">
+              <el-col :span="17">
+                <el-input v-model="form.email_code" style="height: 40px; translate:; text-align: right" type="text" placeholder="请输入验证码">
+                  <template #prefix> <el-icon><<Message/></el-icon></template>
+                </el-input>
+              </el-col>
+              <el-col :span="7">
+                <el-button size="default" @click="askCode()" type="success" style="text-align: right; translate: 0 3px" :disabled="!isValidateEmail() || coldTime !== 0" >
+                  {{ coldTime > 0 ? `请稍后${coldTime}秒` : '请获取验证码' }}
+                </el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-form>
+      <div style="margin-top: 10px">
       </div>
-    </div>
-    <div style="margin-top: 40px">
-      <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
-      <el-form-item prop="username">
-        <el-input v-model="form.username" style="height: 40px; width: 430px" type="text" placeholder="用户名">
-          <template #prefix> <el-icon><User/></el-icon></template>
-        </el-input>
-      </el-form-item>
-
+      </div>
+    <el-button @click="active++" size="default" type="success" style="width: 40%; " plain>注册</el-button>
+ </div>
+  <div v-if="active === 1" style="margin-left: 130px; margin-top: 20px">
+    <el-form :model="form">
       <el-form-item prop="password">
         <el-input v-model="form.password" style="width: 430px; height: 40px" type="password" placeholder="请输入密码">
-        <template #prefix>
-          <el-icon ><lock/></el-icon>
-        </template>
-          </el-input>
+          <template #prefix>
+            <el-icon ><lock/></el-icon>
+          </template>
+        </el-input>
       </el-form-item >
       <el-form-item prop="rePassword">
         <el-input v-model="form.rePassword" style="width: 430px; height: 40px" type="password" placeholder="确认密码">
-        <template #prefix>
-          <el-icon ><lock/></el-icon>
-        </template>
-      </el-input>
+          <template #prefix>
+            <el-icon ><lock/></el-icon>
+          </template>
+        </el-input>
       </el-form-item>
-        <el-form-item prop="email">
-          <el-input v-model="form.email" style="height: 40px; width: 430px" type="email" placeholder="电子邮箱地址">
-            <template #prefix> <el-icon><<Message /></el-icon></template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="email_code">
-          <el-row gutter="10" style="text-align: center">
-            <el-col :span="17">
-              <el-input v-model="form.email_code" style="height: 40px; translate:; text-align: right" type="text" placeholder="请输入验证码">
-                <template #prefix> <el-icon><<Message/></el-icon></template>
-              </el-input>
-            </el-col>
-            <el-col :span="7">
-              <el-button size="default" @click="askCode()" type="success" style="text-align: right; translate: 0 3px" :disabled="!isValidateEmail() || coldTime !== 0" >
-                {{ coldTime > 0 ? `请稍后${coldTime}秒` : '请获取验证码' }}
-              </el-button>
-            </el-col>
-          </el-row>
-        </el-form-item>
-      </el-form>
-
-      <div style="margin-top: 10px">
-        <el-button @click="register()" size="default" type="success" style="width: 150px; " plain>注册</el-button>
-      </div>
-      <div style="margin-top: 10px">
-        <el-link type="primary" style="color: gray" @click="router.push('/')">已有账号？立即登录</el-link>
-      </div>
-    </div>
+    </el-form>
+    <div style="text-align: center">
+    <el-button  @click="reset()"  type="success" style="width: 49%; margin-right: 100px" plain>重置密码</el-button>
   </div>
+  </div>
+
 </template>
+
 <style scoped>
 
 </style>

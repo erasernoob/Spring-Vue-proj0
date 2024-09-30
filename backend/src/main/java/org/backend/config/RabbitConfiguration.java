@@ -19,7 +19,7 @@ public class RabbitConfiguration {
     @Bean("mail")
     public Queue queue() {
         return QueueBuilder
-                .durable("mail")
+                .durable("email")
                 .build();
     }
 }
