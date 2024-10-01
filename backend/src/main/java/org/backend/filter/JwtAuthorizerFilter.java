@@ -20,17 +20,17 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthorizerFilter extends OncePerRequestFilter {
-   @Resource
-   public JwtUtils utils;
+    @Resource
+    public JwtUtils utils;
 
 
     @Override
     public void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                 HttpServletResponse response,
+                                 FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization"); // 得到请求头
         DecodedJWT decodedJWT = utils.resolveJwt(authHeader);
-        // 如果获取到了正确的token就开始解析用户的详细信息，最后继续做过滤的事情
+        // 如果获取到了正确的token就开始解析用户的详细信息， 最后继续过滤
         if(decodedJWT != null) {
             UserDetails user = utils.toUserDetails(decodedJWT);
             // Security用来封装用户信息和权限的一个token类，构造函数分别要提供的是， 用户信息，凭证，用户的身份信息和权限

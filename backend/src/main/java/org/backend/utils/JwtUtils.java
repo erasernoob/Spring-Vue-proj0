@@ -43,7 +43,6 @@ public class JwtUtils {
     public boolean inValidateJwt( String headToken) {
         String token = this.convertToken(headToken);
         if(token == null) {return false;}
-        Algorithm algorithm = Algorithm.HMAC256(value);
         // 首先先对token有效性进行验证
         try {
             DecodedJWT jwt = JWT.decode(token);
