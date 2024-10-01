@@ -13,7 +13,7 @@
       <div style="margin-top: 5px">在这里你可以学习如何打开'mini-DRS', 如何让车队同时丢失车队年度总冠军，和车手年度总冠军。</div>
     </div>
 
-      <div style="width: 700px; background-color: white; z-index: 1">
+      <div style="width: 700px; background-color: var(--el-bg-color); z-index: 1">
           <el-image style="width: fit-content; height: min-content" fit="cover" src="https://1000logos.net/wp-content/uploads/2020/03/McLaren-Logo.png"/>
         <transition name="el-fade-in">
           <router-view/>
