@@ -17,6 +17,9 @@ public record RestBean<T>(String message, int code, T data) {
     public static <T> RestBean<T> failure(String message , int code, T data) {
         return new RestBean<>(message, code, data);
     }
+    public static <T> RestBean<T> forBidden() {
+        return new RestBean<>("请求频繁，请稍后在尝试", 403, null);
+    }
 
     public String toJson() {
         return JSONObject.toJSONString(this);

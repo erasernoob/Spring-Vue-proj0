@@ -7,8 +7,12 @@ public class Const {
     public static final String JWT_BLACK_LIST = "jwt:blacklist";
     public static final int CORS_ORDER = -102;
 
+    public static final int ORDER_LIMIT = -103; // 限流的Filter Order
+
     public static final String VERIFY_EMAIL_LIMIT = "verify:email:limit:";
     // 存数据的前缀
     public static final String VERIFY_EMAIL_DATA = "verify:email:data:";
 
+    public static final String FLOW_LIMIT = "flow:limit:";
+    public static final String FLOW_COUNTER = "flow:counter:";
 }
