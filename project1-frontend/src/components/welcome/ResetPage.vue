@@ -97,7 +97,7 @@ function askCode() {
   if(isValidateEmail()) {
 
     coldTime.value = 60 // 发送之后初始化为60
-    get(`/api/auth/ask-code?email=${form.email}&type=register`,
+    get(`/api/auth/ask-code?email=${form.email}&type=reset`,
         () => {
           ElMessage.success("验证码发送成功请注意查收")
           const intervalId = setInterval(() => coldTime.value--, 1000) // 每一秒钟减去1
@@ -114,7 +114,6 @@ function askCode() {
  * 注册之前通过函数进行判断
  */
 const register = () => {
-  console.log(formRef.value)
   formRef.value.validate((isValid) => {
     if(!isValid) {
       ElMessage.warning("信息填写错误,请完整正确填写注册信息")
@@ -129,9 +128,37 @@ const register = () => {
   })
 }
 
+const resetConfirm = () => {
+  formRef.value.validate((isValid) => {
+    if(!isValid) {
+      ElMessage.warning("信息填写错误，请正确填写重置密码信息")
+    } else {
+      post('api/auth/reset-confirm', {...form}, (message) => {
+        ElMessage.success("邮箱验证成功！")
+        active.value++;
+      }, (message) => {
+        ElMessage.warning(message)
+        ElMessage.warning("请重新验证邮箱")
+        active.value = 0
+      })
+    }
+  })
+}
+
 const reset = () => {
-
-
+  formRef.value.validate((isValid) => {
+    if(!isValid) {
+      ElMessage.warning("信息填写错误，请正确填写重置密码信息")
+    } else {
+      post('api/auth/reset-password', {...form}, (message) => {
+        ElMessage.success("密码重置成功")
+        ElMessage.success("返回登录界面进行登录")
+        router.push('/')
+      }, (message) => {
+        ElMessage.success(message)
+      })
+    }
+  })
 }
 
 const active = ref(0)
@@ -149,7 +176,7 @@ const active = ref(0)
     <div style="font-size: 25px; font-weight: bold">重置密码</div>
     <div style="margin-top: 10px; color: gray">请输入需要重置密码的电子邮件地址</div>
     <div style="margin-top: 25px; margin-left: 140px">
-        <el-form :model="form">
+        <el-form :model="form" ref="formRef" :rules="rules">
           <el-form-item prop="email">
             <el-input v-model="form.email" style="height: 40px; width: 430px" type="email" placeholder="电子邮箱地址">
               <template #prefix> <el-icon><<Message /></el-icon></template>
@@ -173,10 +200,10 @@ const active = ref(0)
       <div style="margin-top: 10px">
       </div>
       </div>
-    <el-button @click="active++" size="default" type="success" style="width: 40%; " plain>注册</el-button>
+    <el-button @click="resetConfirm()" size="default" type="success" style="width: 40%; " plain>开始重置密码</el-button>
  </div>
   <div v-if="active === 1" style="margin-left: 130px; margin-top: 20px">
-    <el-form :model="form">
+    <el-form :model="form" ref="formRef" :rules="rules">
       <el-form-item prop="password">
         <el-input v-model="form.password" style="width: 430px; height: 40px" type="password" placeholder="请输入密码">
           <template #prefix>

@@ -7,13 +7,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import org.backend.Listener.MailQueueListener;
 import org.backend.entity.RestBean;
+import org.backend.entity.vo.request.ConfirmResetVO;
 import org.backend.entity.vo.request.EmailRegisterVO;
+import org.backend.entity.vo.request.EmailResetVO;
 import org.backend.service.AccountService;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @RequestMapping("/api/auth")
@@ -56,4 +59,19 @@ public class AuthorizeController  {
                                         HttpServletRequest request) {
         return this.messageHandler(() -> accountService.registerEmailVerifyCode(type, email, request.getRemoteAddr()));
     }
+
+    private <T> RestBean<Void> messageHandler(T vo, Function<T, String> function) {
+        return messageHandler(() -> function.apply(vo));
+    }
+
+    @PostMapping("/reset-confirm")
+    public RestBean<Void> resetConfirm(@RequestBody@Valid ConfirmResetVO vo) {
+        return messageHandler(vo, accountService::resetConfirm);
+    }
+
+    @PostMapping("/reset-password")
+    public RestBean<Void> resetPassword(@RequestBody@Valid EmailResetVO vo) {
+        return messageHandler(vo, accountService::resetEmailAccountPassword);
+    }
+
 }

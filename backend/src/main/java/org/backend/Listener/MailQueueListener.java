@@ -33,7 +33,7 @@ public class MailQueueListener {
         SimpleMailMessage message = switch (type) {
             case "register" -> createSimpleMailMessage("欢迎注册Mclaren官方网站",
                     "这是你的注册验证码" + code, email);
-            case "resetPassword" -> createSimpleMailMessage("来自Mclaren重置密码操作，是你吗？", "您的验证码为" + code, email);
+            case "reset" -> createSimpleMailMessage("来自Mclaren重置密码操作，是你吗？", "您的验证码为" + code, email);
             default -> null;
         };
         if(message == null) return;

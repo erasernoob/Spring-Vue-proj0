@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import org.backend.entity.dto.AccountDto;
+import org.backend.entity.vo.request.ConfirmResetVO;
 import org.backend.entity.vo.request.EmailRegisterVO;
+import org.backend.entity.vo.request.EmailResetVO;
 import org.backend.mapper.AccountMapper;
 import org.backend.service.AccountService;
 import org.backend.utils.Const;
@@ -126,5 +128,30 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDto> i
             stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email);
         }
         return null;
+    }
+
+    @Override
+    public String resetConfirm(ConfirmResetVO vo) {
+        String email = vo.getEmail();
+        String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + email);
+        if(code == null) {
+            return "请先获取验证码";
+        }
+        if(!code.equals(vo.getEmail_code())) return "验证码错误请重新输入";
+        return null;
+
+    }
+
+    @Override
+    public String resetEmailAccountPassword(EmailResetVO vo) {
+        String verify = this.resetConfirm(new ConfirmResetVO(vo.getEmail(), vo.getEmail_code()));
+        if(!(verify == null)) {return  verify;}
+        String password = passwordEncoder.encode(vo.getPassword());
+        boolean update = this.update().eq("email", vo.getEmail()).set("password", password).update();
+        if(!update) {
+            return "该用户不存在";
+        }
+        return null;
+
     }
 }
